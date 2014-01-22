@@ -70,25 +70,19 @@ else
 fi
 
 
-getCPUx
-if [ "$?" -eq 1 ]; then
+getCPU
+if [ "$?" -eq 0 ]; then
         echo $(date +"%F %T") CRITICAL Processor usage is above Limits
 else
         echo $(date +"%F %T") Processor usage is within normal range
 fi
  
 freeMEM
-if [ "$?" -eq 1 ]; then
+if [ "$?" -eq 0 ]; then
         echo $(date +"%F %T") CRITICAL Memory usage is above Limits
 else
         echo $(date +"%F %T") Memory usage is within normal range
 fi
-
-cpuINFO
-totalMEM
-#var=$(free | awk '/^Mem:/{print $2}')
-#echo $var
-#phymem=$(awk -F":" '$1~/MemTotal/{print $2}' /proc/meminfo )
 
 # - total disk space
 TOTALDISKSPACE=`df  /dev/sda1 | sed '1d' | awk '{print $2}' | cut -d'%' -f1`
@@ -102,18 +96,14 @@ echo $(date +"%F %T") "Available Disk Space      :" $AVAILABLEDISKSPACE
 PERCENTUSEDDISKSPACE=`df -H /dev/sda1 | sed '1d' | awk '{print $5}' | cut -d'%' -f1`
 echo $(date +"%F %T") "Used Disk Space           : ${PERCENTUSEDDISKSPACE}%"
  
-# Disk capacity threshold
+# - disk capacity threshold
 DISKSPACE=`df  /dev/sda1 | sed '1d' | awk '{print $5}' | cut -d'%' -f1`
 ALERT=30
 if [ ${DISKSPACE} -ge ${ALERT} ]; then
     echo $(date +"%F %T") "WARNING disk ${DISKSPACE}% full"
 fi
- 
-#MEMFREE=`cat /proc/meminfo | grep MemFree: | awk '{print $2}'`
-#echo $MEMFREE
-#echo "Break"
- 
-#echo $phymem
+
+# - check network 
 ping_return=`ping -c1 google.com 2>&1 | grep unknown`
 if [ ! "$ping_return" = "" ]; then
        echo $(date +"%F %T") "CRITICAL - Network status : DOWN - attempting to restart !!!"
@@ -121,11 +111,8 @@ if [ ! "$ping_return" = "" ]; then
 else
        echo $(date +"%F %T") "Network status            : up"
 fi
- 
-#tclock="$($_CMD date +"%T")"
-#rclock="$($_CMD date +"%r")"
-#dateNow=$(date +"%Y-%m-%d")
-#rfs="$($_CMD df -hT | grep -vE "^Filesystem|shm")"
+
+# - display system status 
 rload="$($_CMD uptime |awk -F'average:' '{ print $2}')"
 rfreeram="$($_CMD free -mto | grep Mem: | awk '{ print $4 " MB" }')"
 rtotalram="$($_CMD free -mto | grep Mem: | awk '{ print $2 " MB" }')"
@@ -138,5 +125,5 @@ echo $(date +"%F %T") "    load       " $rload
 echo $(date +"%F %T") "    total ram  " $rtotalram
 echo $(date +"%F %T") "    free ram   " $rfreeram
 echo $(date +"%F %T") "    ram used   " $rusedram
-
+echo $(date +"%F %T") 
 

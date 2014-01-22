@@ -8,7 +8,7 @@
 #
 # Set up logging and monitoring cron job
 crontab -r
-(crontab -l 2>/dev/null; echo "* * * * * /home/testuser/logmon.sh >> /tmp/logfile.txt") | crontab -
+(crontab -l 2>/dev/null; echo "* * * * * /home/testuser/deploy/logmon.sh >> /tmp/logfile.txt") | crontab -
 #
 # call deployment script 
-sudo ./deployment.sh
+sudo /home/testuser/deploy/deployment.sh
