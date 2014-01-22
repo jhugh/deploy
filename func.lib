@@ -1,0 +1,243 @@
+#!/bin/bash
+#
+# Function Library
+#
+# # NCI MscWebTech 2013-14
+# # Deployment Project
+# # Hugh Kelly 13117386 
+#
+# 
+# 1. Functions
+#    1.1 Level 0 functions
+#    1.2 Level 1 functions
+#    1.3 Level 2 functions
+#
+#
+# *******************************************************************
+# 1. FUNCTIONS
+# *******************************************************************
+#
+#
+# 1.1 Level 0 functions <----------------------------------------------
+#
+#
+
+function isRunning {
+PROCESS_NUM=$(ps -ef | grep "$1" | grep -v "grep" | wc -l)
+if [ $PROCESS_NUM -gt 0 ] ; then
+        #echo $PROCESS_NUM
+        return 1
+else
+        return 0
+fi
+}
+
+
+function isTCPlisten {
+TCPCOUNT=$(netstat -tupln | grep tcp | grep "$1" | wc -l)
+if [ $TCPCOUNT -gt 0 ] ; then
+        return 1
+else
+        return 0
+fi
+}
+
+
+function isUDPlisten {
+UDPCOUNT=$(netstat -tupln | grep udp | grep "$1" | wc -l)
+if [ $UDPCOUNT -gt 0 ] ; then
+        return 1
+else
+        return 0
+fi
+}
+
+
+function isTCPremoteOpen {
+timeout 1 bash -c "echo >/dev/tcp/$1/$2" && return 1 ||  return 0
+}
+
+
+function isIPalive {
+PINGCOUNT=$(ping -c 1 "$1" | grep "1 received" | wc -l)
+if [ $PINGCOUNT -gt 0 ] ; then
+        return 1
+else
+        return 0
+fi
+}
+
+
+function getCPU {
+app_name=$1
+cpu_limit="5000"
+app_pid=`ps aux | grep $app_name | grep -v grep | awk {'print $2'}`
+app_cpu=`ps aux | grep $app_name | grep -v grep | awk {'print $3*100'}`
+if [[ $app_cpu -gt $cpu_limit ]]; then
+     return 0
+else
+     return 1
+fi
+}
+
+
+
+
+
+#==============================================================
+
+
+function freeMEM {
+MFREE=`cat /proc/meminfo | grep MemFree: | awk '{print $2}'`
+if [ "$MFREE" -lt 160000 ]; then
+        return 1
+else
+        return 0
+      
+fi
+}
+ 
+function totalMEM {
+TOTAL=`cat /proc/meminfo | grep MemTotal: | awk '{print $2}'`
+echo "Total Memory here $TOTAL"
+if [ "$TOTAL" -lt 1000000 ]; then
+        return 1
+else
+        return 0
+      
+fi
+}
+ 
+function cpuINFO {
+echo "Getting cpu Details"
+CPUTYPE=`cat /proc/cpuinfo | grep "vendor_id"  | awk '{print $3}'`
+#CPUTYPE=$(grep "model name" /proc/cpuinfo)
+echo $CPUTYPE
+c=`iostat | awk '{if(NR==4) {print $1}}'`
+echo $c
+CPU=`ps aux | grep "mySql" | grep -v grep | awk '{print $3}'`
+        echo "CPU status is:" $CPU
+}
+ 
+function getCPUx {
+app_name=$1
+cpu_limit="5000"
+app_pid='ps aux | grep $app_name | grep -v grep | awk {'print $3'}'
+app_cpu='ps aux | grep $app_name | grep -v grep | awk {'print $3*100'}'
+if [[ $app_cpu -gt $cpu_limit ]]; then
+     return 0
+else
+     return 1
+fi
+}
+ 
+ 
+
+#===============================================================
+
+
+
+
+
+
+
+#
+# 1.2 Level 1 functions <----------------------------------------------
+#
+function isApacheRunning {
+        isRunning apache2
+        return $?
+}
+
+function isApacheListening {
+        isTCPlisten 80
+        return $?
+}
+
+function isApacheRemoteUp {
+        isTCPremoteOpen 127.0.0.1 80
+        return $?
+}
+
+function isMysqlRunning {
+        isRunning mysqld
+        return $?
+}
+
+function isMysqlListening {
+        isTCPlisten 3306
+        return $?
+}
+
+function isMysqlRemoteUp {
+        isTCPremoteOpen 127.0.0.1 3306
+        return $?
+}
+
+
+#
+# 1.3 Level 2 functions <----------------------------------------------
+#
+function isDepMysqlRunning {
+	ssh testuser@dep-server . func.lib isMysqlRunning
+       return $?
+}
+
+function isDepMysqlListening {
+       ssh testuser@dep-server isMysqlListening
+       return $?
+}
+
+function isDepMysqlRemoteUp {
+       ssh testuser@dep-server isMysqlRemoteUp
+       return $?
+}
+
+APACHE_ERROR=1
+function unitTestApache {
+    APACHE_ERROR=1
+    isApacheRunning
+    if [ "$?" -eq 1 ]; then
+        isApacheListening
+        if [ "$?" -eq 1 ]; then
+            isApacheRemoteUp
+            if [ "$?" -eq 1 ]; then
+                echo "Apache is Ok"
+            else
+                APACHE_ERROR=0
+            fi
+        else
+            APACHE_ERROR=0
+        fi
+    else
+        APACHE_ERROR=0
+    fi
+    if [ $APACHE_ERROR -eq 0 ]; then
+        echo "Apache is NOT Ok"
+    fi
+}
+
+MYSQL_ERROR=1
+function unitTestMysql {
+    MYSQL_ERROR=1
+    isMysqlRunning
+    if [ "$?" -eq 1 ]; then
+        isMysqlListening
+        if [ "$?" -eq 1 ]; then
+            isMysqlRemoteUp
+            if [ "$?" -eq 1 ]; then
+                echo "Mysql is Ok"
+            else
+                MYSQL_ERROR=0
+            fi
+        else
+            MYSQL_ERROR=0
+        fi
+    else
+        MYSQL_ERROR=0
+    fi
+    if [ $MYSQL_ERROR -eq 0 ]; then
+        echo "Mysql is NOT Ok"
+    fi
+}
+
