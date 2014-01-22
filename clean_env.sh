@@ -7,9 +7,6 @@
 # Script that cleans and prepares env
 # 
 
-# FUNCTION LIBRARY
-source /home/testuser/func.lib
-
 # ----------------------------------------------------------------
 #
 # This clean and preparation process will clean up the B/I/T/D server environment.
@@ -53,11 +50,7 @@ ruby --version
 # - remove any previous stuff 
 cd
 rm /tmp/logfile.txt
-rm deploy/deploy.rep
-
-# - create deploy directory
-mkdir deploy
-cd deploy
+rm deploy.rep
 
 #
 echo ENVIRONMENT CLEANED AND PREPARED
