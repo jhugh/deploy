@@ -113,6 +113,8 @@ then
 else
         echo $ERRORCHECK build errors
 fi
+B_ERRORS=$ERRORCHECK
+
 
 # ------------------------------------------------------------------
 # ------------------------------------------------------------------
@@ -161,6 +163,8 @@ then
 else
         echo $ERRORCHECK integration errors
 fi
+I_ERRORS=$ERRORCHECK
+
 
 
 # ------------------------------------------------------------------
@@ -212,6 +216,8 @@ then
 else
         echo $ERRORCHECK test errors
 fi
+T_ERRORS=$ERRORCHECK
+
 
 
 # ------------------------------------------------------------------
@@ -336,15 +342,24 @@ then
 else
         echo $ERRORCHECK deploy errors
 fi
+D_ERRORS=$ERRORCHECK
 
 # - Tidy up
 cd /tmp
 rm -rf $SANDBOX
 cd
 
+# - report all errors
+echo
+echo Error Summary
+echo Build errors: $B_ERRORS
+echo Intgration errors: $I_ERRORS
+echo Test errors: $T_ERRORS
+echo Deploy errors: $D_ERRORS
+echo
+
 
 # - check all is running ok
-
 ERRORCOUNT=0
 # - CHECK MYSQL
 isMysqlRunning
