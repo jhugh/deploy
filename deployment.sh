@@ -326,7 +326,7 @@ then
   ERRORCHECK+=128
 fi
 
-# - Errorcheck, send email if issues
+# - Errorcheck, rollback and send email if issues
 if [ $ERRORCHECK -ne 0 ]
 then
         echo $ERRORCHECK deploy errors, rolling back and exiting
