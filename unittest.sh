@@ -9,7 +9,8 @@
 # 
 #
 
-source /home/testuser/func.lib
+source /home/testuser/deploy/func.lib
 
 unitTestApache
 unitTestMysql
+unitTestMem

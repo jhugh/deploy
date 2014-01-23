@@ -214,3 +214,18 @@ function unitTestMysql {
     fi
 }
 
+function unitTestMem {
+   freeMEM
+   if [ "$?" -eq 1 ]
+   then
+      totalMEM
+      if [ "$?" -eq 1 ]
+      then
+          echo "Memory OK"
+      else
+          echo "Memory NOT ok"
+      fi
+   else
+      echo "Memory NOT ok"
+   fi
+}   
