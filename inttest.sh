@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Unit Tests
+# Integration Test
 #
 # # NCI MscWebTech 2013-14
 # # Deployment Project
